@@ -3,7 +3,6 @@
 #include "miniwget.h"
 #include "miniupnpc.h"
 #include "upnpcommands.h"
-
 Portfwd::Portfwd()
  : urls(0), data(0)
 {
@@ -65,7 +64,7 @@ Portfwd::init(unsigned int timeout)
        int i;
        i = UPNP_GetValidIGD(devlist, urls, data, (char*)&lanaddr, 16);
        m_lanip = std::string(lanaddr);
-       
+
        freeUPNPDevlist(devlist);
        get_status();
        return true;
@@ -82,8 +81,8 @@ Portfwd::get_status()
 
     // get external IP adress
     char ip[16];
-    if( 0 != UPNP_GetExternalIPAddress( urls->controlURL, 
-                                        data->servicetype, 
+    if( 0 != UPNP_GetExternalIPAddress( urls->controlURL,
+                                        data->servicetype,
                                         (char*)&ip ) )
     {
         m_externalip = ""; //failed
@@ -93,7 +92,7 @@ Portfwd::get_status()
 }
 
 bool
-Portfwd::add( unsigned short port )
+Portfwd::add( unsigned short port , char * type)
 {
    char port_str[16];
    int r;
@@ -105,7 +104,7 @@ Portfwd::add( unsigned short port )
    }
    sprintf(port_str, "%d", port);
    r = UPNP_AddPortMapping(urls->controlURL, data->servicetype,
-                           port_str, port_str, m_lanip.c_str(), 0, "TCP", NULL);
+                           port_str, port_str, m_lanip.c_str(), 0, type, NULL);
    if(r!=0)
    {
     printf("AddPortMapping(%s, %s, %s) failed, code %d\n", port_str, port_str, m_lanip.c_str(), r);
@@ -115,7 +114,7 @@ Portfwd::add( unsigned short port )
 }
 
 bool
-Portfwd::remove( unsigned short port )
+Portfwd::remove( unsigned short port , char * type)
 {
    char port_str[16];
    printf("Portfwd::remove(%d)\n", port);
@@ -125,7 +124,25 @@ Portfwd::remove( unsigned short port )
        return false;
    }
    sprintf(port_str, "%d", port);
-   int r = UPNP_DeletePortMapping(urls->controlURL, data->servicetype, port_str, "TCP", NULL);
+   int r = UPNP_DeletePortMapping(urls->controlURL, data->servicetype, port_str, type, NULL);
    return r == 0;
 }
 
+
+/*
+* Name of the port passed with name internalIP and internalPort
+*/
+bool Portfwd::getPortInformation(unsigned short port, char * type, char * internalIP, char * internalPort){
+  char port_str[16];
+  if(urls->controlURL[0] == '\0')
+  {
+      printf("Portfwd - the init was not done !\n");
+      return false;
+  }
+  sprintf(port_str, "%d", port);
+  int r=UPNP_GetSpecificPortMappingEntry(urls->controlURL, data->servicetype,port_str,
+  							     type,
+                                   internalIP,
+                                   internalPort);
+ return r == 0;
+}
