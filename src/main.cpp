@@ -17,14 +17,13 @@ int main(int argc, char** argv)
     printf("LAN IP: %s\n", pf.lan_ip().c_str());
     printf("Max upstream: %d bps, max downstream: %d bps\n",
            pf.max_upstream_bps(), pf.max_downstream_bps() );
-           
-    printf("%s\n", ((pf.add( port ))?"Added":"Failed to add") );
+
+    printf("%s\n", ((pf.add( port, "TCP"))?"Added":"Failed to add") );
 
     printf("Any key to exit...\n");
     char foo;
     scanf("%c",&foo);
 
-    printf("%s\n",  ((pf.remove( port ))?"Removed.":"Failed to remove") );
+    printf("%s\n",  ((pf.remove( port, "TCP"))?"Removed.":"Failed to remove") );
     return 0;
 }
-
